@@ -1,0 +1,42 @@
+{
+    "name": "my-gov/myjpn",
+    "description": "Malaysian's identity number (MyKAD, MyKID, MyKAS, MyPR, MyTentera) parser and validator",
+    "version": "1.0.0",
+    "keywords": [
+        "myjpn",
+        "jabatan pendaftaran negara",
+        "mykad",
+        "mykid",
+        "mytentera",
+        "mykas",
+        "mypr"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*",
+        "phpmd/phpmd": "*",
+        "phpstan/phpstan": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "MyGOV\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --display-deprecations tests",
+        "qc": [
+          "phpstan analyse --memory-limit=512M",
+          "phpmd src text phpmd.xml"
+        ]
+    }
+}
