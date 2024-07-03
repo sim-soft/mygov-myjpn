@@ -1,7 +1,6 @@
 {
     "name": "my-gov/myjpn",
     "description": "Malaysian's identity number (MyKAD, MyKID, MyKAS, MyPR, MyTentera) parser and validator",
-  "version": "1.0.2",
     "keywords": [
         "myjpn",
         "jabatan pendaftaran negara",
