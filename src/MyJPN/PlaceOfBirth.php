@@ -53,7 +53,7 @@ class PlaceOfBirth
 
         if (!$this->valid) {
             $this->exception && throw new InvalidMyKADBirthplaceCodeException(
-                Lang::get('invalid_birthplace', 'exceptions') ?? 'Invalid birth place code',
+                Lang::get('invalid_birthplace', 'exceptions', 'Invalid birth place code'),
                 1004
             );
         }
@@ -112,7 +112,7 @@ class PlaceOfBirth
     {
         if ($this->valid) {
             if ($this->isMYPlace) {
-                return Lang::get('malaysia') ?? 'Malaysia';
+                return Lang::get('malaysia', default: 'Malaysia');
             } elseif (array_key_exists($this->code, static::$codes)) {
                 return static::$codes[$this->code];
             }

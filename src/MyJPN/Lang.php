@@ -30,13 +30,14 @@ class Lang
     /**
      * Get translated text by key.
      *
-     * @param string $key
-     * @param string $group
-     * @return string|null
+     * @param string $key Key for the translated text.
+     * @param string $group Translated text's group.
+     * @param string $default Default text.
+     * @return string
      */
-    public static function get(string $key, string $group = 'default'): ?string
+    public static function get(string $key, string $group = 'default', string $default = ''): string
     {
-        return static::$storage[$group][$key] ?? null;
+        return static::$storage[$group][$key] ?? $default;
     }
 
     /**
