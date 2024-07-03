@@ -36,7 +36,7 @@ try {
         echo $myKad->isFemale() ? 'Female' : 'Male';    // Male
 
         // Place of birth information
-        echo $myKad->getBirthPlaceCode();   // 14
+        echo $myKad->getBirthplaceCode();   // 14
         echo $myKad->getState();            // Wilayah Persekutuan (Kuala Lumpur)
         echo $myKad->getCountry();          // Malaysia
 
@@ -71,10 +71,10 @@ use MyGOV\MyJPN\MyKAD;
 $myKad = MyKAD::parse('980524-14-2347', exception: false);
 
 if ($myKad->isValid()) {
-    echo $myKad->getBirthPlaceCode();   // 14
+    echo $myKad->getBirthplaceCode();   // 14
     echo $myKad->getState();            // Wilayah Persekutuan (Kuala Lumpur)
 } else {
-    echo $myKad->getBirthPlaceCode();   // null
+    echo $myKad->getBirtplaceCode();   // null
     echo $myKad->getState();            // null
 }
 ```

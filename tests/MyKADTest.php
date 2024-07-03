@@ -78,7 +78,7 @@ class MyKADTest extends TestCase
                 $this->assertEquals($gender, $myKad->isMale() ? 'male' : 'female');
                 $this->assertEquals($gender, $myKad->isFemale() ? 'female' : 'male');
 
-                $this->assertEquals($placeCode, $myKad->getBirthPlaceCode());
+                $this->assertEquals($placeCode, $myKad->getBirthplaceCode());
                 $this->assertEquals($country, strtoupper($myKad->getCountry()));
 
 
