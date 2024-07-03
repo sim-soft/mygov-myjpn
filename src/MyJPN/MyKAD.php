@@ -463,12 +463,10 @@ class MyKAD
             $birthdate = (new DateTime(timezone: new DateTimezone('Asia/Kuala_Lumpur')))->setTimestamp(rand($min, $max));
         }
 
-        if ($birthplaceCode) {
-            PlaceOfBirth::lookup($birthplaceCode);
-        }
-
         if ($birthplaceCode === null) {
             $birthplaceCode = (string) array_rand(PlaceOfBirth::getCodes());
+        } elseif ($birthplaceCode == 'local') {
+            $birthplaceCode = (string)array_rand(PlaceOfBirth::getMYCodes());
         }
 
         $number = mt_rand(1, 9999);

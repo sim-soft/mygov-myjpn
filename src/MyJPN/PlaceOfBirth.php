@@ -16,7 +16,7 @@ class PlaceOfBirth
     protected bool $isMYPlace = false;
 
     /** @var array|string[] birthplaces code belongs to Malaysia. */
-    protected array $myPlaces = [
+    protected static array $myPlaces = [
         '01', '21', '22', '23', '24',
         '02', '25', '26', '27',
         '03', '28', '29',
@@ -58,7 +58,7 @@ class PlaceOfBirth
             );
         }
 
-        $this->isMYPlace = in_array($this->code, $this->myPlaces);
+        $this->isMYPlace = in_array($this->code, static::$myPlaces);
     }
 
     /**
@@ -132,5 +132,15 @@ class PlaceOfBirth
             static::$codes = Lang::getPBCodes();
         }
         return static::$codes;
+    }
+
+    /**
+     * Get all local codes.
+     *
+     * @return string[]
+     */
+    public static function getMYCodes(): array
+    {
+        return array_intersect_key(static::getCodes(), array_flip(static::$myPlaces));
     }
 }
