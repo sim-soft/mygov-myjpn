@@ -246,7 +246,7 @@ class MyKAD
                 $onDateTime ? $onDateTime->setTimezone($this->timezone) : new DateTime(timezone: $this->timezone)
             );
 
-            return strtr($template ?? Lang::get('actual_age', default: ''), [
+            return strtr($template ?? Lang::get('actual_age'), [
                 '{year}' => $age->y,
                 '{month}' => $age->m,
                 '{day}' => $age->d,
