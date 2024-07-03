@@ -385,7 +385,7 @@ class MyKAD
      *
      * @return string|null
      */
-    public function getBirthPlaceCode(): ?string
+    public function getBirthplaceCode(): ?string
     {
         return $this->birthplace?->getCode();
     }
@@ -431,7 +431,7 @@ class MyKAD
     {
         if ($this->isValid()) {
             return $officialFormat
-                ? $this->getBirthDate()?->format('ymd') . '-' . $this->getBirthPlaceCode() . '-' . $this->specialNumber
+                ? $this->getBirthDate()?->format('ymd') . '-' . $this->getBirthplaceCode() . '-' . $this->specialNumber
                 : $this->identityNumber;
         }
         return null;
