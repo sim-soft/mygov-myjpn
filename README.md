@@ -128,6 +128,11 @@ echo $myKad->formal();  // 980524-10-2347
 
 $myKad = MyKAD::make(birthplaceCode: '82');
 echo $myKad->formal();  // 010522-82-2588
+
+// ensure generated identity number from Malaysia only.
+$myKad = MyKAD::make(birthplaceCode: 'local');
+echo $myKad->formal();    // 010522-02-2588
+echo $myKad->getState();  // output: Kedah.
 ```
 
 ## Usage in Laravel Validation.

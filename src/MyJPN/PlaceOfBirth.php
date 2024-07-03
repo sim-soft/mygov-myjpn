@@ -16,7 +16,7 @@ class PlaceOfBirth
     protected bool $isMYPlace = false;
 
     /** @var array|string[] birthplaces code belongs to Malaysia. */
-    protected array $myPlaces = [
+    protected static array $myPlaces = [
         '01', '21', '22', '23', '24',
         '02', '25', '26', '27',
         '03', '28', '29',
@@ -53,12 +53,12 @@ class PlaceOfBirth
 
         if (!$this->valid) {
             $this->exception && throw new InvalidMyKADBirthplaceCodeException(
-                Lang::get('invalid_birthplace', 'exceptions') ?? 'Invalid birth place code',
+                Lang::get('invalid_birthplace', 'exceptions', 'Invalid birth place code'),
                 1004
             );
         }
 
-        $this->isMYPlace = in_array($this->code, $this->myPlaces);
+        $this->isMYPlace = in_array($this->code, static::$myPlaces);
     }
 
     /**
@@ -112,7 +112,7 @@ class PlaceOfBirth
     {
         if ($this->valid) {
             if ($this->isMYPlace) {
-                return Lang::get('malaysia') ?? 'Malaysia';
+                return Lang::get('malaysia', default: 'Malaysia');
             } elseif (array_key_exists($this->code, static::$codes)) {
                 return static::$codes[$this->code];
             }
@@ -132,5 +132,15 @@ class PlaceOfBirth
             static::$codes = Lang::getPBCodes();
         }
         return static::$codes;
+    }
+
+    /**
+     * Get all local codes.
+     *
+     * @return string[]
+     */
+    public static function getMYCodes(): array
+    {
+        return array_intersect_key(static::getCodes(), array_flip(static::$myPlaces));
     }
 }

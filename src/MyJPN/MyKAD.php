@@ -94,7 +94,7 @@ class MyKAD
     {
         if (!is_numeric(str_replace(['-', ' '], '', $this->identityNumber))) {
             $this->exception && throw new InvalidMyKADCharactersException(
-                Lang::get('invalid_characters', 'exceptions') ?? 'Invalid characters',
+                Lang::get('invalid_characters', 'exceptions', 'Invalid characters'),
                 1001
             );
         }
@@ -112,7 +112,7 @@ class MyKAD
     {
         if (strlen($this->identityNumber) !== $this->validLength) {
             $this->exception && throw new InvalidMyKADLengthException(
-                Lang::get('invalid_length', 'exceptions') ?? 'Invalid length',
+                Lang::get('invalid_length', 'exceptions', 'Invalid length'),
                 1002
             );
         }
@@ -158,7 +158,7 @@ class MyKAD
         $this->dob === null
             && $this->exception
             && throw new InvalidMyKADBirthdateException(
-                Lang::get('invalid_birthdate', 'exceptions') ?? 'Invalid birthdate',
+            Lang::get('invalid_birthdate', 'exceptions', 'Invalid birthdate'),
                 1003
                 );
     }
@@ -239,13 +239,14 @@ class MyKAD
         if ($this->dob) {
 
             $onDateTime && $this->dob > $onDateTime
-            && $this->exception && throw new Exception(Lang::get('invalid_on_date', 'exceptions') ?? 'Invalid date');
+            && $this->exception
+            && throw new Exception(Lang::get('invalid_on_date', 'exceptions', 'Invalid date'));
 
             $age = $this->dob->diff(
                 $onDateTime ? $onDateTime->setTimezone($this->timezone) : new DateTime(timezone: $this->timezone)
             );
 
-            return strtr($template ?? Lang::get('actual_age') ?? '', [
+            return strtr($template ?? Lang::get('actual_age'), [
                 '{year}' => $age->y,
                 '{month}' => $age->m,
                 '{day}' => $age->d,
@@ -276,7 +277,7 @@ class MyKAD
     {
         if ($age <= 0) {
             throw new InvalidMyKADAgeException(
-                Lang::get('invalid_age_input', 'exceptions') ?? 'Invalid age value'
+                Lang::get('invalid_age_input', 'exceptions', 'Invalid age value')
             );
         }
 
@@ -371,12 +372,12 @@ class MyKAD
     public function getAgeGroup(?DateTime $onDateTime = null): string
     {
         return match(true) {
-            $this->isChildren($onDateTime) => Lang::get('children', 'age_groups') ?? 'Children',
-            $this->isYouth($onDateTime) => Lang::get('youth', 'age_groups') ?? 'Youth',
-            $this->isAdult($onDateTime) => Lang::get('adult', 'age_groups') ?? 'Adult',
-            $this->isOldAdult($onDateTime) => Lang::get('old_adult', 'age_groups') ?? 'Old Adult',
-            $this->isSeniorCitizen($onDateTime) => Lang::get('senior_citizen', 'age_groups') ?? 'Senior Citizen',
-            default => Lang::get('unknown_group', 'age_groups') ?? 'Unknown Group',
+            $this->isChildren($onDateTime) => Lang::get('children', 'age_groups', 'Children'),
+            $this->isYouth($onDateTime) => Lang::get('youth', 'age_groups', 'Youth'),
+            $this->isAdult($onDateTime) => Lang::get('adult', 'age_groups', 'Adult'),
+            $this->isOldAdult($onDateTime) => Lang::get('old_adult', 'age_groups', 'Old Adult'),
+            $this->isSeniorCitizen($onDateTime) => Lang::get('senior_citizen', 'age_groups', 'Senior Citizen'),
+            default => Lang::get('unknown_group', 'age_groups', 'Unknown Group'),
         };
     }
 
@@ -462,12 +463,10 @@ class MyKAD
             $birthdate = (new DateTime(timezone: new DateTimezone('Asia/Kuala_Lumpur')))->setTimestamp(rand($min, $max));
         }
 
-        if ($birthplaceCode) {
-            PlaceOfBirth::lookup($birthplaceCode);
-        }
-
         if ($birthplaceCode === null) {
             $birthplaceCode = (string) array_rand(PlaceOfBirth::getCodes());
+        } elseif ($birthplaceCode == 'local') {
+            $birthplaceCode = (string)array_rand(PlaceOfBirth::getMYCodes());
         }
 
         $number = mt_rand(1, 9999);
