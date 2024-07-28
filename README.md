@@ -190,4 +190,6 @@ $validator = Validator::make($request->all(), [
 ]);
 ```
 ## License
-The Simsoft Validator is licensed under the MIT License. See the [LICENSE](LICENSE) file for details
+
+The Simsoft MyGOV/MyJPN is licensed under the MIT License. See
+the [LICENSE](LICENSE) file for details

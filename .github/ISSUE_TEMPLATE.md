@@ -1,7 +1,8 @@
 Hello,
 
 I encountered an issue with the following code:
-```phpt
+
+```php
 $validator = new Validator();
 if($validator->validate()) {
     echo 'Valid';
@@ -11,16 +12,18 @@ if($validator->validate()) {
 }
 ```
 
-WeCanTrack version: PUT HERE YOUR WECANTRACK VERSION (exact version)
+Package version: PUT HERE YOUR PACKAGE VERSION (exact version)
 
 PHP version: PUT HERE YOUR PHP VERSION
 
 I expected to get:
-```phpt
+
+```php
 Valid
 ```
 But I actually get:
-```phpt
+
+```php
 errors
 ```
 Thanks!
