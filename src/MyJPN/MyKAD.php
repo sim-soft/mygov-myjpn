@@ -3,6 +3,7 @@
 namespace MyGOV\MyJPN;
 
 use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use MyGOV\MyJPN\Exceptions\InvalidMyKADAgeException;
@@ -16,8 +17,8 @@ use MyGOV\MyJPN\Exceptions\InvalidMyKADLengthException;
  */
 class MyKAD
 {
-    /** @var DateTime|null Date of birth. */
-    protected ?DateTime $dob = null;
+    /** @var DateTimeImmutable|null Date of birth. */
+    protected ?DateTimeImmutable $dob = null;
 
     /** @var PlaceOfBirth|null Place of birth. */
     protected ?PlaceOfBirth $birthplace = null;
@@ -138,17 +139,13 @@ class MyKAD
         $today = date_create(timezone: $this->timezone);
         $thisYearPrefix = substr($today->format('Y'), 0, 2);
 
-        $birthdate = date_create_from_format('Ymd', $thisYearPrefix . $year . $monthDay, $this->timezone);
+        $birthdate = date_create_immutable_from_format('Ymd', $thisYearPrefix . $year . $monthDay, $this->timezone);
         if($birthdate && $birthdate->format('Ymd') == $thisYearPrefix . $year . $monthDay) { // if is a valid date.
-            $birthdate2 = clone $birthdate;
-            $interval = date_interval_create_from_date_string("100 years");
-            if ($interval) {
-                date_sub($birthdate2, $interval);
-            }
+            $birthdate2 = $birthdate->modify('-100 years');
 
             // Assumption majority does not have age over 100yo (average life expectancy in Malaysia as of 2024 is approximately 76.79 years).
             // Only 2,296 centenarians recorded on year 2024.
-            $this->dob = $birthdate > $today || $this->isElderly || $birthdate2->diff($birthdate)->y < 100
+            $this->dob = $birthdate > $today || $this->isElderly || $birthdate2->diff($today)->y < 100
                 ? $birthdate2
                 : $birthdate;
 
@@ -206,9 +203,9 @@ class MyKAD
     /**
      * Get date of birth.
      *
-     * @return DateTime|null
+     * @return DateTimeImmutable|null
      */
-    public function getBirthDate(): ?DateTime
+    public function getBirthDate(): ?DateTimeImmutable
     {
         return $this->dob;
     }
@@ -226,13 +223,13 @@ class MyKAD
     /**
      * Get actual age. If specific date is provided, will determine the age on the specific date.
      *
-     * @param DateTime|null $onDateTime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDateTime On specific date.
      * @param string|null $template Display actual age template.
      * @return string|null
      * @throws Exception
      */
     public function getActualAge(
-        ?DateTime $onDateTime = null,
+        DateTime|DateTimeImmutable|null $onDateTime = null,
         ?string $template = null
     ): ?string
     {
@@ -258,10 +255,10 @@ class MyKAD
     /**
      * Get age on a specific date.
      *
-     * @param DateTime $dateTime The specific date.
+     * @param DateTime|DateTimeImmutable $dateTime The specific date.
      * @return int|null
      */
-    public function getAgeOn(DateTime $dateTime): ?int
+    public function getAgeOn(DateTime|DateTimeImmutable $dateTime): ?int
     {
         return $this->dob?->diff($dateTime->setTimezone($this->timezone))->y;
     }
@@ -270,10 +267,10 @@ class MyKAD
      * Check is the person over specific age. If onDateTime is provided, will check age on the specific datetime.
      *
      * @param int $age The age to be checked.
-     * @param DateTime|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isOver(int $age, ?DateTime $onDatetime = null): bool
+    public function isOver(int $age, DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($age <= 0) {
             throw new InvalidMyKADAgeException(
@@ -294,10 +291,10 @@ class MyKAD
     /**
      * Determine the person is a child.
      *
-     * @param DateTime|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isChildren(?DateTime $onDatetime = null): bool
+    public function isChildren(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($onDatetime) {
             $age = $this->getAgeOn($onDatetime);
@@ -309,10 +306,10 @@ class MyKAD
     /**
      * Determine the person is a youth.
      *
-     * @param DateTime|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isYouth(?DateTime $onDatetime = null): bool
+    public function isYouth(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($onDatetime) {
             $age = $this->getAgeOn($onDatetime);
@@ -324,10 +321,10 @@ class MyKAD
     /**
      * Determine the person is an adult.
      *
-     * @param DateTime|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isAdult(?DateTime $onDatetime = null): bool
+    public function isAdult(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($onDatetime) {
             $age = $this->getAgeOn($onDatetime);
@@ -339,10 +336,10 @@ class MyKAD
     /**
      * Determine the person is an old adult.
      *
-     * @param DateTime|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isOldAdult(?DateTime $onDatetime = null): bool
+    public function isOldAdult(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($onDatetime) {
             $age = $this->getAgeOn($onDatetime);
@@ -354,10 +351,10 @@ class MyKAD
     /**
      * Determine the person is a senior citizen.
      *
-     * @param DateTime|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @throws Exception
      */
-    public function isSeniorCitizen(?DateTime $onDatetime = null): bool
+    public function isSeniorCitizen(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         return $this->isOver(65, $onDatetime);
     }
@@ -365,11 +362,11 @@ class MyKAD
     /**
      * Get age group.
      *
-     * @param DateTime|null $onDateTime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDateTime On specific date.
      * @return string
      * @throws Exception
      */
-    public function getAgeGroup(?DateTime $onDateTime = null): string
+    public function getAgeGroup(DateTime|DateTimeImmutable|null $onDateTime = null): string
     {
         return match(true) {
             $this->isChildren($onDateTime) => Lang::get('children', 'age_groups', 'Children'),
@@ -441,7 +438,7 @@ class MyKAD
     /**
      * Make a fake MyKad identity number.
      *
-     * @param DateTime|null $birthdate Specify birthdate to be used.
+     * @param DateTime|DateTimeImmutable|null $birthdate Specify birthdate to be used.
      * @param bool|null $male Specify gender to be used.
      * @param string|null $birthplaceCode Specify birthplace to be used.
      * @param string $language Language to be used. Supported: en, ms, & zh-cn. Default: en.
@@ -449,7 +446,7 @@ class MyKAD
      * @throws Exception
      */
     public static function make(
-        ?DateTime $birthdate = null,
+        DateTime|DateTimeImmutable|null $birthdate = null,
         ?bool $male = null,
         ?string $birthplaceCode = null,
         string $language = 'en',
@@ -458,9 +455,8 @@ class MyKAD
         Lang::load($language);
 
         if ($birthdate === null) {
-            $min = strtotime('May 1, 1990'); // Malaysia using High-Quality identity card since May 1, 1990.
-            $max = time();
-            $birthdate = (new DateTime(timezone: new DateTimezone('Asia/Kuala_Lumpur')))->setTimestamp(rand($min, $max));
+            $birthdate = (new DateTimeImmutable(timezone: new DateTimezone('Asia/Kuala_Lumpur')))
+                ->setTimestamp(rand(strtotime('May 1, 1990'), time())); // Malaysia using High-Quality identity card since May 1, 1990.
         }
 
         if ($birthplaceCode === null) {
