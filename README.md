@@ -78,6 +78,27 @@ if ($myKad->isValid()) {
     echo $myKad->getState();            // null
 }
 ```
+
+## Turn On Identity number extraction
+
+Extract the identity number from the given string.
+
+```php
+require 'vendor/autoload.php';
+
+use MyGOV\MyJPN\MyKAD;
+
+$myKad = MyKAD::parse('John Doe (640329-10-7061)', extraction: true);
+
+if ($myKad->isValid()) {
+    echo $myKad->getBirthplaceCode();   // 10
+    echo $myKad->getState();            // Selangor
+} else {
+    echo $myKad->getBirtplaceCode();   // null
+    echo $myKad->getState();            // null
+}
+```
+
 ## Handling Centenarians
 By default, MyKAD parser can handle birthdate below 100 years old only. Enable `isElderLy` to handle birthdate more than 100 years old.
 ```php
