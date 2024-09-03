@@ -2,6 +2,7 @@
 
 namespace MyGOV\MyJPN;
 
+use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -17,6 +18,8 @@ use MyGOV\MyJPN\Exceptions\InvalidMyKADLengthException;
  */
 class MyKAD
 {
+    const REGEX_ID_NUMBER = '/\b(\d{6}\s?-?\s?\d{2}\s?-?\s?\d{4})\b/';
+
     /** @var DateTimeImmutable|null Date of birth. */
     protected ?DateTimeImmutable $dob = null;
 
@@ -70,6 +73,7 @@ class MyKAD
      * @param DateTimeZone $timezone Timezone to be used. Default: Malaysia timezone.
      * @param bool $exception Turn on exception. Default: true.
      * @param string $language Language to be used. Supported: en, ms, & zh-cn. Default: en.
+     * @param bool $extraction Perform identity number extraction from the given identity number string. default: false.
      * @return static
      * @throws Exception
      */
@@ -78,9 +82,14 @@ class MyKAD
         bool $isElderly = false,
         DateTimeZone $timezone = new DateTimeZone('Asia/Kuala_Lumpur'),
         bool $exception = true,
-        string $language = 'en'
+        string $language = 'en',
+        bool   $extraction = false
     ): static
     {
+        if ($extraction && preg_match(self::REGEX_ID_NUMBER, $identityNumber, $matches)) {
+            $identityNumber = $matches[0];
+        }
+
         return new static($identityNumber, $isElderly, $timezone, $exception, $language);
     }
 
@@ -223,13 +232,13 @@ class MyKAD
     /**
      * Get actual age. If specific date is provided, will determine the age on the specific date.
      *
-     * @param DateTimeInterface|null $onDateTime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDateTime On specific date.
      * @param string|null $template Display actual age template.
      * @return string|null
      * @throws Exception
      */
     public function getActualAge(
-        ?DateTimeInterface $onDateTime = null,
+        DateTime|DateTimeImmutable|null $onDateTime = null,
         ?string $template = null
     ): ?string
     {
@@ -240,7 +249,9 @@ class MyKAD
             && throw new Exception(Lang::get('invalid_on_date', 'exceptions', 'Invalid date'));
 
             $age = $this->dob->diff(
-                $onDateTime ? $onDateTime->setTimezone($this->timezone) : new DateTimeImmutable(timezone: $this->timezone)
+                $onDateTime
+                    ? $onDateTime->setTimezone($this->timezone)
+                    : new DateTimeImmutable(timezone: $this->timezone)
             );
 
             return strtr($template ?? Lang::get('actual_age'), [
@@ -255,10 +266,10 @@ class MyKAD
     /**
      * Get age on a specific date.
      *
-     * @param DateTimeInterface $dateTime The specific date.
+     * @param DateTime|DateTimeImmutable $dateTime The specific date.
      * @return int|null
      */
-    public function getAgeOn(DateTimeInterface $dateTime): ?int
+    public function getAgeOn(DateTime|DateTimeImmutable $dateTime): ?int
     {
         return $this->dob?->diff($dateTime->setTimezone($this->timezone))->y;
     }
