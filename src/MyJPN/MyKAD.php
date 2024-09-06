@@ -278,10 +278,10 @@ class MyKAD
     /**
      * Get age on a specific date.
      *
-     * @param DateTimeInterface $dateTime The specific date.
+     * @param DateTime|DateTimeImmutable $dateTime The specific date.
      * @return int|null
      */
-    public function getAgeOn(DateTimeInterface $dateTime): ?int
+    public function getAgeOn(DateTime|DateTimeImmutable $dateTime): ?int
     {
         return $this->dob?->diff($dateTime->setTimezone($this->timezone))->y;
     }
@@ -290,10 +290,10 @@ class MyKAD
      * Check is the person over specific age. If onDateTime is provided, will check age on the specific datetime.
      *
      * @param int $age The age to be checked.
-     * @param DateTimeInterface|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isOver(int $age, ?DateTimeInterface $onDatetime = null): bool
+    public function isOver(int $age, DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($age <= 0) {
             throw new InvalidMyKADAgeException(
@@ -314,10 +314,10 @@ class MyKAD
     /**
      * Determine the person is a child.
      *
-     * @param DateTimeInterface|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isChildren(?DateTimeInterface $onDatetime = null): bool
+    public function isChildren(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($onDatetime) {
             $age = (int)$this->getAgeOn($onDatetime);
@@ -329,10 +329,10 @@ class MyKAD
     /**
      * Determine the person is a youth.
      *
-     * @param DateTimeInterface|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isYouth(?DateTimeInterface $onDatetime = null): bool
+    public function isYouth(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($onDatetime) {
             $age = (int)$this->getAgeOn($onDatetime);
@@ -344,10 +344,10 @@ class MyKAD
     /**
      * Determine the person is an adult.
      *
-     * @param DateTimeInterface|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isAdult(?DateTimeInterface $onDatetime = null): bool
+    public function isAdult(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($onDatetime) {
             $age = (int)$this->getAgeOn($onDatetime);
@@ -359,10 +359,10 @@ class MyKAD
     /**
      * Determine the person is an old adult.
      *
-     * @param DateTimeInterface|null $onDatetime On specific date.
+     * @param DateTime|DateTimeImmutable|null $onDatetime On specific date.
      * @return bool
      */
-    public function isOldAdult(?DateTimeInterface $onDatetime = null): bool
+    public function isOldAdult(DateTime|DateTimeImmutable|null $onDatetime = null): bool
     {
         if ($onDatetime) {
             $age = (int)$this->getAgeOn($onDatetime);
