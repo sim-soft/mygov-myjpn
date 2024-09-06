@@ -6,12 +6,14 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use Exception;
+use MyGOV\MyJPN\Exceptions\ExtractMyKADException;
 use MyGOV\MyJPN\Exceptions\InvalidMyKADAgeException;
 use MyGOV\MyJPN\Exceptions\InvalidMyKADBirthdateException;
 use MyGOV\MyJPN\Exceptions\InvalidMyKADBirthplaceCodeException;
 use MyGOV\MyJPN\Exceptions\InvalidMyKADCharactersException;
 use MyGOV\MyJPN\Exceptions\InvalidMyKADLengthException;
+use MyGOV\MyJPN\Exceptions\InvalidMyKADOnDateException;
+use Throwable;
 
 /**
  * MyKAD class
@@ -49,7 +51,7 @@ class MyKAD
      * @param DateTimeZone $timezone Timezone to be used. Default: Malaysia timezone.
      * @param bool $exception Turn on exception. Default: true.
      * @param string $language Language to be used. Supported: en, ms, & zh-cn. Default: 'en'.
-     * @throws Exception
+     * @throws Throwable
      */
     final public function __construct(
         protected string $identityNumber,
@@ -75,7 +77,7 @@ class MyKAD
      * @param string $language Language to be used. Supported: en, ms, & zh-cn. Default: en.
      * @param bool $extraction Perform identity number extraction from the given identity number string. default: false.
      * @return static
-     * @throws Exception
+     * @throws Throwable
      */
     public static function parse(
         string $identityNumber,
@@ -86,8 +88,14 @@ class MyKAD
         bool   $extraction = false
     ): static
     {
-        if ($extraction && preg_match(self::REGEX_ID_NUMBER, $identityNumber, $matches)) {
-            $identityNumber = $matches[0];
+        if ($extraction) {
+            if (preg_match(self::REGEX_ID_NUMBER, $identityNumber, $matches)) {
+                $identityNumber = $matches[0];
+            }
+
+            if (preg_last_error() !== PREG_NO_ERROR) {
+                $exception && throw new ExtractMyKADException(preg_last_error_msg());
+            }
         }
 
         return new static($identityNumber, $isElderly, $timezone, $exception, $language);
@@ -120,18 +128,20 @@ class MyKAD
      */
     protected function parsing(): void
     {
-        if (strlen($this->identityNumber) !== $this->validLength) {
-            $this->exception && throw new InvalidMyKADLengthException(
+        $this->valid = strlen($this->identityNumber) === $this->validLength;
+
+        !$this->valid && $this->exception && throw new InvalidMyKADLengthException(
                 Lang::get('invalid_length', 'exceptions', 'Invalid length'),
                 1002
-            );
+        );
+
+        if ($this->valid) {
+            $this->parseValidBirthdate();
+
+            $this->birthplace = PlaceOfBirth::lookup(substr($this->identityNumber, 6, 2), $this->exception);
+            $this->specialNumber = substr($this->identityNumber, 8, 4);
+            $this->isFemale = ((int)substr($this->identityNumber, -1, 1)) % 2 == 0;
         }
-
-        $this->parseValidBirthdate();
-
-        $this->birthplace = PlaceOfBirth::lookup(substr($this->identityNumber, 6, 2), $this->exception);
-        $this->specialNumber = substr($this->identityNumber, 8, 4);
-        $this->isFemale = ((int) substr($this->identityNumber, -1, 1)) % 2 == 0;
     }
 
     /**
@@ -222,7 +232,7 @@ class MyKAD
     /**
      * Get person age.
      *
-     * @throws Exception
+     * @return int|null
      */
     public function getAge(): ?int
     {
@@ -235,7 +245,7 @@ class MyKAD
      * @param DateTime|DateTimeImmutable|null $onDateTime On specific date.
      * @param string|null $template Display actual age template.
      * @return string|null
-     * @throws Exception
+     * @throws Throwable
      */
     public function getActualAge(
         DateTime|DateTimeImmutable|null $onDateTime = null,
@@ -246,7 +256,9 @@ class MyKAD
 
             $onDateTime && $this->dob > $onDateTime
             && $this->exception
-            && throw new Exception(Lang::get('invalid_on_date', 'exceptions', 'Invalid date'));
+            && throw new InvalidMyKADOnDateException(
+                Lang::get('invalid_on_date', 'exceptions', 'Invalid date')
+            );
 
             $age = $this->dob->diff(
                 $onDateTime
@@ -266,10 +278,10 @@ class MyKAD
     /**
      * Get age on a specific date.
      *
-     * @param DateTime|DateTimeImmutable $dateTime The specific date.
+     * @param DateTimeInterface $dateTime The specific date.
      * @return int|null
      */
-    public function getAgeOn(DateTime|DateTimeImmutable $dateTime): ?int
+    public function getAgeOn(DateTimeInterface $dateTime): ?int
     {
         return $this->dob?->diff($dateTime->setTimezone($this->timezone))->y;
     }
@@ -308,7 +320,7 @@ class MyKAD
     public function isChildren(?DateTimeInterface $onDatetime = null): bool
     {
         if ($onDatetime) {
-            $age = $this->getAgeOn($onDatetime);
+            $age = (int)$this->getAgeOn($onDatetime);
             return $age >= 0 && $age <= 14;
         }
         return $this->age >= 0 && $this->age <= 14;
@@ -323,7 +335,7 @@ class MyKAD
     public function isYouth(?DateTimeInterface $onDatetime = null): bool
     {
         if ($onDatetime) {
-            $age = $this->getAgeOn($onDatetime);
+            $age = (int)$this->getAgeOn($onDatetime);
             return $age >= 15 && $age <= 24;
         }
         return $this->age >= 15 && $this->age <= 24;
@@ -338,7 +350,7 @@ class MyKAD
     public function isAdult(?DateTimeInterface $onDatetime = null): bool
     {
         if ($onDatetime) {
-            $age = $this->getAgeOn($onDatetime);
+            $age = (int)$this->getAgeOn($onDatetime);
             return $age >= 25 && $age <= 54;
         }
         return $this->age >= 25 && $this->age <= 54;
@@ -353,7 +365,7 @@ class MyKAD
     public function isOldAdult(?DateTimeInterface $onDatetime = null): bool
     {
         if ($onDatetime) {
-            $age = $this->getAgeOn($onDatetime);
+            $age = (int)$this->getAgeOn($onDatetime);
             return $age >= 55 && $age <= 64;
         }
         return $this->age >= 55 && $this->age <= 64;
@@ -363,7 +375,7 @@ class MyKAD
      * Determine the person is a senior citizen.
      *
      * @param DateTimeInterface|null $onDatetime On specific date.
-     * @throws Exception
+     * @return bool
      */
     public function isSeniorCitizen(?DateTimeInterface $onDatetime = null): bool
     {
@@ -374,12 +386,12 @@ class MyKAD
      * Get age group.
      *
      * @param DateTimeInterface|null $onDateTime On specific date.
-     * @return string
-     * @throws Exception
+     * @return string|null
      */
-    public function getAgeGroup(?DateTimeInterface $onDateTime = null): string
+    public function getAgeGroup(?DateTimeInterface $onDateTime = null): ?string
     {
         return match(true) {
+            !$this->valid => null,
             $this->isChildren($onDateTime) => Lang::get('children', 'age_groups', 'Children'),
             $this->isYouth($onDateTime) => Lang::get('youth', 'age_groups', 'Youth'),
             $this->isAdult($onDateTime) => Lang::get('adult', 'age_groups', 'Adult'),
@@ -454,7 +466,7 @@ class MyKAD
      * @param string|null $birthplaceCode Specify birthplace to be used.
      * @param string $language Language to be used. Supported: en, ms, & zh-cn. Default: en.
      * @return static
-     * @throws Exception
+     * @throws Throwable
      */
     public static function make(
         ?DateTimeInterface $birthdate = null,
